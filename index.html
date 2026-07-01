@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Polyrhythm Drill — 复合节奏练习器</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <span class="dot l"></span><span class="dot r"></span>
+      </div>
+      <div>
+        <h1>Polyrhythm&nbsp;Drill</h1>
+        <p class="sub">复合节奏练习器 · tap two hands, hear the truth</p>
+      </div>
+    </div>
+    <div class="mode-switch" role="tablist" aria-label="Practice mode">
+      <button id="modeFixed" class="mode-btn active" role="tab">Fixed&nbsp;Tempo</button>
+      <button id="modeFree" class="mode-btn" role="tab">Freestyle</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- ===== Controls ===== -->
+    <section class="panel controls">
+      <h2>Setup</h2>
+
+      <!-- Ratio -->
+      <div class="field">
+        <label>Ratio&nbsp;(Left&nbsp;:&nbsp;Right)</label>
+        <div class="ratio-row">
+          <input id="ratioL" class="num" type="number" min="1" max="16" value="3" />
+          <span class="colon">:</span>
+          <input id="ratioR" class="num" type="number" min="1" max="16" value="4" />
+        </div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <!-- Tempo -->
+      <div class="field fixed-only">
+        <label>Tempo <span class="hint" id="tempoHint"></span></label>
+        <input id="bpm" type="range" min="10" max="180" value="45" />
+        <div class="tempo-readout">
+          <span id="bpmVal">45</span> bpm
+          <select id="tempoRef" title="What the BPM counts">
+            <option value="cycle">per cycle</option>
+            <option value="left">left hand</option>
+            <option value="right">right hand</option>
+          </select>
+        </div>
+        <div class="derived" id="derived"></div>
+      </div>
+
+      <!-- Sound toggles -->
+      <div class="field fixed-only">
+        <label>Guide sounds</label>
+        <div class="toggles">
+          <label class="chk"><input type="checkbox" id="metro" checked /> Metronome (downbeat)</label>
+          <label class="chk"><input type="checkbox" id="guide" /> Play reference pattern</label>
+        </div>
+      </div>
+
+      <!-- Key mapping -->
+      <div class="field">
+        <label>Key mapping</label>
+        <div class="keymap">
+          <button class="keybtn l" id="bindL"><span class="hand">Left</span><kbd id="keyL">F</kbd></button>
+          <button class="keybtn r" id="bindR"><span class="hand">Right</span><kbd id="keyR">J</kbd></button>
+        </div>
+        <p class="tiny" id="bindMsg">Click a hand, then press any key to bind it.</p>
+      </div>
+
+      <div class="field">
+        <label>Volume</label>
+        <input id="volume" type="range" min="0" max="100" value="80" />
+      </div>
+
+      <div class="actions">
+        <button id="startBtn" class="primary">▶ Start</button>
+        <button id="clearBtn" class="ghost">Clear taps</button>
+      </div>
+    </section>
+
+    <!-- ===== Timeline + feedback ===== -->
+    <section class="panel stage">
+      <div class="stage-head">
+        <h2 id="stageTitle">Timeline</h2>
+        <div class="legend">
+          <span class="lg l">● Left</span>
+          <span class="lg r">● Right</span>
+          <span class="lg ref">▏ Reference</span>
+        </div>
+      </div>
+
+      <canvas id="timeline" class="timeline"></canvas>
+
+      <div class="tap-hint" id="tapHint">Press <b>Start</b>, then tap your two keys. The <b>Now</b> line is where you should land on a reference.</div>
+
+      <!-- Feedback -->
+      <div class="feedback">
+        <div class="stats" id="stats">
+          <div class="stat"><span class="k">Taps</span><span class="v" id="stTaps">0</span></div>
+          <div class="stat"><span class="k">Avg&nbsp;off</span><span class="v" id="stAvg">–</span></div>
+          <div class="stat"><span class="k">In&nbsp;time</span><span class="v" id="stIn">–</span></div>
+          <div class="stat"><span class="k">Best&nbsp;streak</span><span class="v" id="stStreak">0</span></div>
+        </div>
+
+        <div class="phase-wrap fixed-only">
+          <div class="phase-title">Accuracy scatter <span class="tiny">(all cycles overlaid · center = perfect)</span></div>
+          <canvas id="phase" class="phase"></canvas>
+        </div>
+
+        <div class="analysis free-only" id="analysis">
+          <div class="an-title">Freestyle analysis</div>
+          <div class="an-body" id="anBody">Tap freely, then press <b>Stop</b> to estimate your tempo &amp; ratio.</div>
+        </div>
+      </div>
+
+      <div class="playback">
+        <button id="playTaps" class="ghost">🔊 Playback my taps</button>
+        <button id="playRef" class="ghost fixed-only">🎯 Play reference</button>
+        <span class="tiny" id="pbMsg"></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Built for practicing 2:3, 3:4, 4:7, 9:11 … any a:b. All timing is local, nothing leaves your browser.</span>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
