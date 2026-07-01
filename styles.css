@@ -126,3 +126,129 @@ button:disabled{opacity:.4;cursor:not-allowed}
 /* mode visibility */
 body.free .fixed-only{display:none}
 body.fixed .free-only{display:none}
+
+/* =========================================================================
+   Mobile / touch / PWA
+   ========================================================================= */
+/* [hidden] must win over the display rules below (e.g. .ios-help{display:flex}) */
+[hidden]{ display:none !important; }
+
+*{ -webkit-tap-highlight-color:transparent; }
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body{
+  overscroll-behavior:none;
+  -webkit-user-select:none; user-select:none;
+  touch-action:manipulation;
+}
+/* keep selection/interaction where it helps */
+input,select,textarea,kbd,.an-body{ -webkit-user-select:auto; user-select:auto; }
+
+/* safe-area insets (notch / home bar). env() = 0 on desktop */
+.app{
+  padding-top: calc(22px + env(safe-area-inset-top));
+  padding-left: calc(20px + env(safe-area-inset-left));
+  padding-right: calc(20px + env(safe-area-inset-right));
+}
+
+/* topbar right cluster + install chip */
+.topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.install-chip{
+  background:var(--panel2); border:1px solid var(--accent); color:var(--accent);
+  border-radius:10px; padding:9px 13px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;
+}
+.install-chip:hover{ background:var(--accent); color:#0b1020; }
+
+/* ---- Fixed thumb-pad bar (mobile) ---- */
+:root{ --tapbar-h:132px; }
+.tapbar{
+  display:none;
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  gap:10px;
+  padding:10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
+  background:linear-gradient(180deg, rgba(13,16,23,.55), rgba(13,16,23,.97) 45%);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);
+}
+.pad{
+  position:relative; flex:1; min-width:0; height:var(--tapbar-h);
+  border-radius:18px; border:1.5px solid var(--line); background:var(--panel2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer; overflow:hidden;
+  touch-action:none; -webkit-touch-callout:none;
+  transition:transform .04s ease, background .1s ease, box-shadow .08s ease;
+}
+.pad .pad-hand{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:700; }
+.pad .pad-key{ font-size:30px; font-weight:800; }
+.pad.l{ border-color:var(--l-dim); } .pad.l .pad-key{ color:var(--l); }
+.pad.r{ border-color:var(--r-dim); } .pad.r .pad-key{ color:var(--r); }
+.pad.l.active{ background:rgba(45,212,191,.22); box-shadow:inset 0 0 0 2px var(--l); transform:scale(.98); }
+.pad.r.active{ background:rgba(245,158,11,.22); box-shadow:inset 0 0 0 2px var(--r); transform:scale(.98); }
+
+.run-btn.mid{
+  flex:0 0 auto; width:74px; height:var(--tapbar-h);
+  border-radius:18px; border:0; cursor:pointer;
+  background:linear-gradient(180deg,#7c9cff,#5b7cf0); color:#0b1020;
+  font-size:26px; font-weight:800;
+}
+.run-btn.mid.running{ background:linear-gradient(180deg,#f87171,#e05555); }
+
+/* ---- iOS install overlay ---- */
+.ios-help{
+  position:fixed; inset:0; z-index:60;
+  background:rgba(4,6,12,.72); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+  display:flex; align-items:flex-end; justify-content:center;
+  padding:0 12px calc(16px + env(safe-area-inset-bottom));
+}
+.ios-card{
+  position:relative; width:100%; max-width:420px;
+  background:var(--panel); border:1px solid var(--line); border-radius:18px;
+  padding:20px 20px 22px; box-shadow:var(--shadow);
+}
+.ios-card h3{ margin:0 0 8px; font-size:17px; }
+.ios-card p{ margin:0 0 12px; color:var(--muted); font-size:13.5px; }
+.ios-card ol{ margin:0; padding-left:18px; line-height:1.9; font-size:14px; }
+.ios-card .ios-ic{ display:inline-block; padding:0 5px; color:var(--accent); font-weight:700; }
+.ios-close{
+  position:absolute; top:10px; right:10px; width:34px; height:34px;
+  border-radius:10px; border:1px solid var(--line); background:var(--panel2);
+  color:var(--ink); font-size:20px; cursor:pointer; line-height:1;
+}
+
+/* ---- Show tapbar + reserve space (phones/tablets) ---- */
+@media (max-width:860px), (pointer:coarse) and (max-width:1024px){
+  .tapbar{ display:flex; }
+  .app{ padding-bottom: calc(var(--tapbar-h) + 26px + env(safe-area-inset-bottom)); }
+}
+
+/* On phones the practice timeline is the star — float it above Setup so it's
+   visible while thumbs rest on the pads. Setup drops below (scroll to tweak). */
+@media (max-width:860px){
+  .stage{ order:-1; }
+}
+
+/* ---- Phone layout ---- */
+@media (max-width:640px){
+  .app{ padding-left:calc(12px + env(safe-area-inset-left)); padding-right:calc(12px + env(safe-area-inset-right)); }
+  .topbar{ margin-bottom:12px; gap:10px; }
+  h1{ font-size:18px; } .sub{ font-size:11.5px; }
+  .panel{ padding:14px; } .grid{ gap:12px; }
+  .timeline{ height:172px; } .phase{ height:104px; }
+  .stats{ grid-template-columns:repeat(2,1fr); } .stat .v{ font-size:18px; }
+  .mode-btn{ padding:10px 12px; font-size:13px; }
+  .preset{ padding:8px 12px; font-size:13px; }   /* bigger tap targets */
+  .num{ padding:12px; }
+  .keybtn{ padding:14px; }
+  input[type=range]{ height:26px; }
+  .chk input{ width:20px; height:20px; }
+  .actions button.primary{ padding:15px; }        /* thumb-friendly */
+}
+
+/* ---- Landscape phones: shrink timeline so pads still fit ---- */
+@media (pointer:coarse) and (max-height:520px){
+  :root{ --tapbar-h:100px; }
+  .timeline{ height:128px; } .phase{ height:84px; }
+  .pad .pad-key{ font-size:24px; }
+}
+
+/* ---- Installed (standalone): hide the install chip ---- */
+@media (display-mode:standalone){ .install-chip{ display:none !important; } }

@@ -2,8 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Polyrhythm Drill — 复合节奏练习器</title>
+<meta name="description" content="Practice polyrhythms (复合节奏) — any a:b ratio, real-time deviation feedback, playback, fixed-tempo & freestyle modes." />
+<meta name="theme-color" content="#0d1017" />
+<meta name="color-scheme" content="dark" />
+
+<!-- PWA / installable -->
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+
+<!-- iOS: standalone "Add to Home Screen" (no address bar) -->
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Polyrhythm" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -18,9 +34,12 @@
         <p class="sub">复合节奏练习器 · tap two hands, hear the truth</p>
       </div>
     </div>
-    <div class="mode-switch" role="tablist" aria-label="Practice mode">
-      <button id="modeFixed" class="mode-btn active" role="tab">Fixed&nbsp;Tempo</button>
-      <button id="modeFree" class="mode-btn" role="tab">Freestyle</button>
+    <div class="topbar-right">
+      <button id="installBtn" class="install-chip" type="button" hidden>⤓&nbsp;Install</button>
+      <div class="mode-switch" role="tablist" aria-label="Practice mode">
+        <button id="modeFixed" class="mode-btn active" role="tab">Fixed&nbsp;Tempo</button>
+        <button id="modeFree" class="mode-btn" role="tab">Freestyle</button>
+      </div>
     </div>
   </header>
 
@@ -131,7 +150,37 @@
   <footer class="foot">
     <span>Built for practicing 2:3, 3:4, 4:7, 9:11 … any a:b. All timing is local, nothing leaves your browser.</span>
   </footer>
+
+  <!-- Fixed thumb-pad bar (mobile / touch). Desktop uses the keyboard. -->
+  <div class="tapbar" id="tapbar">
+    <button class="pad l" id="padL" type="button" aria-label="Left hand tap">
+      <span class="pad-hand">LEFT</span>
+      <span class="pad-key" id="padKeyL">F</span>
+      <span class="pad-ripple"></span>
+    </button>
+    <button class="run-btn mid" id="startBtn2" type="button" aria-label="Start / stop">▶</button>
+    <button class="pad r" id="padR" type="button" aria-label="Right hand tap">
+      <span class="pad-hand">RIGHT</span>
+      <span class="pad-key" id="padKeyR">J</span>
+      <span class="pad-ripple"></span>
+    </button>
+  </div>
 </div>
+
+<!-- iOS install instructions -->
+<div class="ios-help" id="iosHelp" hidden>
+  <div class="ios-card">
+    <button class="ios-close" id="iosClose" type="button" aria-label="Close">×</button>
+    <h3>Add to Home Screen</h3>
+    <p>Install Polyrhythm Drill as an app — full screen, no address bar, works offline.</p>
+    <ol>
+      <li>Tap the <b>Share</b> button <span class="ios-ic">⬆︎</span> in Safari's toolbar.</li>
+      <li>Scroll down and choose <b>“Add to Home Screen”</b> <span class="ios-ic">⊕</span>.</li>
+      <li>Tap <b>Add</b> — then launch it from your home screen.</li>
+    </ol>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>

@@ -44,6 +44,10 @@
     stTaps: $('stTaps'), stAvg: $('stAvg'), stIn: $('stIn'), stStreak: $('stStreak'),
     anBody: $('anBody'),
     playTaps: $('playTaps'), playRef: $('playRef'), pbMsg: $('pbMsg'),
+    // mobile / PWA
+    startBtn2: $('startBtn2'), padL: $('padL'), padR: $('padR'),
+    padKeyL: $('padKeyL'), padKeyR: $('padKeyR'),
+    installBtn: $('installBtn'), iosHelp: $('iosHelp'), iosClose: $('iosClose'),
   };
 
   // =========================================================================
@@ -215,14 +219,14 @@
   const PX_PER_SEC = 150;
   const NOW_FRAC = 0.34;      // now-line position from the left
 
-  function fitCanvas(canvas, cssHeight) {
+  function fitCanvas(canvas, fallbackH) {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.clientWidth || canvas.parentElement.clientWidth;
+    const h = canvas.clientHeight || fallbackH;   // CSS-driven → responsive height
     canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(cssHeight * dpr);
-    const c = canvas.getContext('2d');
-    c.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { w, h: cssHeight };
+    canvas.height = Math.round(h * dpr);
+    canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w, h };
   }
   let tlSize = { w: 600, h: 210 }, phSize = { w: 600, h: 120 };
   function resize() {
@@ -232,6 +236,7 @@
     if (!S.running) drawTimeline(true);
   }
   window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', () => setTimeout(resize, 150));
 
   function laneY(hand) {
     // Left lane upper third, Right lane lower third.
@@ -375,6 +380,18 @@
   // =========================================================================
   //  Start / stop
   // =========================================================================
+  // keep both Start buttons (controls + mobile tapbar) in sync
+  function setRunLabel() {
+    const r = S.running;
+    if (el.startBtn) { el.startBtn.textContent = r ? '■ Stop' : '▶ Start'; el.startBtn.classList.toggle('running', r); }
+    if (el.startBtn2) { el.startBtn2.textContent = r ? '■' : '▶'; el.startBtn2.classList.toggle('running', r); }
+    document.body.classList.toggle('running', r);
+  }
+  function syncPadKeys() {
+    if (el.padKeyL) el.padKeyL.textContent = label(S.keyL);
+    if (el.padKeyR) el.padKeyR.textContent = label(S.keyR);
+  }
+
   function start() {
     audio();
     if (ctx.state === 'suspended') ctx.resume();
@@ -382,8 +399,7 @@
     S.running = true;
     S.startPerf = performance.now();
     S.startAudio = ctx.currentTime + 0.06;   // small offset so first downbeat isn't clipped
-    el.startBtn.textContent = '■ Stop';
-    el.startBtn.classList.add('running');
+    setRunLabel();
     el.pbMsg.textContent = '';
     updateStats();
     if (S.mode === 'fixed') startScheduler();
@@ -394,8 +410,7 @@
     S.running = false;
     S.stopPerf = performance.now();
     stopScheduler();
-    el.startBtn.textContent = '▶ Start';
-    el.startBtn.classList.remove('running');
+    setRunLabel();
     drawTimeline(true);
     if (S.mode === 'freestyle') analyzeFreestyle();
   }
@@ -554,7 +569,7 @@
     if (S.running) stop();
     S.taps = [];
     updateStats();
-    drawTimeline(true);
+    resize();   // refit canvases (phase scatter toggles visibility between modes)
   }
 
   // key binding
@@ -608,6 +623,7 @@
       if (key === other) { el.bindMsg.textContent = 'That key is already used by the other hand.'; return; }
       if (S.binding === 'L') { S.keyL = key; el.keyL.textContent = label(key); }
       else { S.keyR = key; el.keyR.textContent = label(key); }
+      syncPadKeys();
       endBind();
       drawTimeline(!S.running);
       return;
@@ -632,6 +648,66 @@
   }
 
   // =========================================================================
+  //  Touch pads (mobile) — Pointer Events for multi-touch + low latency
+  // =========================================================================
+  function bindPad(pad, hand) {
+    if (!pad) return;
+    const down = (ev) => {
+      ev.preventDefault();                 // suppress zoom / scroll / text-select
+      pad.classList.add('active');
+      registerTap(hand);
+      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+    };
+    const up = () => pad.classList.remove('active');
+    pad.addEventListener('pointerdown', down);
+    pad.addEventListener('pointerup', up);
+    pad.addEventListener('pointercancel', up);
+    pad.addEventListener('pointerleave', up);
+    pad.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  // =========================================================================
+  //  PWA install ("Add to Home Screen") + service worker
+  // =========================================================================
+  let deferredPrompt = null;
+  const isStandalone = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    window.navigator.standalone === true;
+  const isiOS = () =>
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  const showInstallChip = () => { if (el.installBtn && !isStandalone()) el.installBtn.hidden = false; };
+  const hideInstallChip = () => { if (el.installBtn) el.installBtn.hidden = true; };
+
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; showInstallChip(); });
+  window.addEventListener('appinstalled', () => { deferredPrompt = null; hideInstallChip(); });
+
+  function setupInstall() {
+    if (isStandalone()) { hideInstallChip(); return; }
+    if (isiOS()) showInstallChip();        // iOS lacks beforeinstallprompt → show manual guide
+    if (el.installBtn) el.installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        try { await deferredPrompt.userChoice; } catch (e) {}
+        deferredPrompt = null;
+        hideInstallChip();
+      } else if (el.iosHelp) {
+        el.iosHelp.hidden = false;
+      }
+    });
+    if (el.iosClose) el.iosClose.addEventListener('click', () => { el.iosHelp.hidden = true; });
+    if (el.iosHelp) el.iosHelp.addEventListener('click', (e) => { if (e.target === el.iosHelp) el.iosHelp.hidden = true; });
+  }
+
+  function registerSW() {
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+    }
+  }
+
+  // =========================================================================
   //  Init
   // =========================================================================
   function init() {
@@ -640,6 +716,13 @@
     setMode('fixed');
     el.keyL.textContent = label(S.keyL);
     el.keyR.textContent = label(S.keyR);
+    syncPadKeys();
+    bindPad(el.padL, 'L');
+    bindPad(el.padR, 'R');
+    if (el.startBtn2) el.startBtn2.addEventListener('click', toggleRun);
+    setRunLabel();
+    setupInstall();
+    registerSW();
     // canvases need layout first
     requestAnimationFrame(() => { resize(); loop(); });
   }

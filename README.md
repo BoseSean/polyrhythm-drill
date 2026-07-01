@@ -14,6 +14,7 @@ Everything runs **100% in the browser** with vanilla JS + the Web Audio API. No 
 - **Scrolling timeline** — reference ticks flow toward a **Now** line so you can *see* where to land; your taps drop onto two lanes with a connector back to their target.
 - **Accuracy scatter** — every tap folded into a single cycle so you can spot whether you rush or drag.
 - **Playback** — hear your taps back with **distinct tones per hand** (left = warm C5 triangle, right = reedy G5 square). Or play the perfect **reference** pattern to model it.
+- **Mobile-first & installable (PWA)** — big two-thumb tap pads, works offline, and installs to your home screen as a full-screen app (no address bar). Desktop keeps the keyboard.
 
 ### Two practice modes
 
@@ -31,6 +32,15 @@ Everything runs **100% in the browser** with vanilla JS + the Web Audio API. No 
 5. Watch **Avg off / In‑time %** climb, then **Playback my taps** to listen.
 
 > **Tip:** turn on *Play reference pattern* first to internalise the sound, then switch it off and rely on just the metronome.
+
+## 📱 Install on your phone (Add to Home Screen)
+
+The app is a **PWA** — install it for a full-screen, offline, native-feeling experience.
+
+- **iPhone / iPad (Safari):** open the live URL → tap **Share** ⬆︎ → **Add to Home Screen** → **Add**. Launch it from the icon; there's no address bar.
+- **Android (Chrome):** open the live URL → tap the **Install** chip (or ⋮ menu → **Install app**).
+
+On phones you tap two big **thumb pads** (Left / Right) instead of the keyboard, with a Start/Stop button between them. Haptic buzz on each tap where supported. On desktop, the keyboard stays the primary input.
 
 ## 🏃 Running locally
 
@@ -67,13 +77,20 @@ The live version is deployed at:
 
 ```
 polyrhythm-drill/
-├── index.html   # markup
-├── styles.css   # dark theme
-├── app.js       # all logic: audio, scheduling, canvas, analysis
+├── index.html              # markup + PWA meta tags
+├── styles.css              # dark theme + mobile/touch layout
+├── app.js                  # all logic: audio, scheduling, canvas, analysis, touch, install
+├── manifest.webmanifest    # PWA manifest (name, icons, standalone display)
+├── sw.js                   # service worker — offline app-shell cache
+├── icon-192.png / icon-512.png / icon-512-maskable.png
+├── apple-touch-icon.png    # iOS home-screen icon
+├── favicon-32.png
 └── README.md
 ```
 
-No frameworks. Hack away.
+No frameworks, no build step. Hack away.
+
+> **Note:** the service worker (offline support) only activates over **http(s)** — i.e. the live GitHub Pages URL or a local server, not a bare `file://` open. Everything else works from `file://` too.
 
 ---
 
