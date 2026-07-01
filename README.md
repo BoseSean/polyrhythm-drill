@@ -1,5 +1,7 @@
 # Polyrhythm Drill · 复合节奏练习器
 
+**▶ Live demo: https://bosesean.github.io/polyrhythm-drill/**
+
 A tiny, dependency‑free web app for practising **polyrhythms** — 2:3, 3:4, 4:7, 9:11, 7:11, or any `a:b` you like. Tap two keys (one per hand), see exactly how tight you are on a scrolling timeline, and play your performance back so your ears can be the judge.
 
 Everything runs **100% in the browser** with vanilla JS + the Web Audio API. No server, no tracking, no build step.
@@ -45,11 +47,11 @@ python -m http.server 8000
 
 ## 🌐 GitHub Pages
 
-If Pages is enabled for this repo, the live version is at:
+The live version is deployed at:
 
-```
-https://<user>.github.io/polyrhythm-drill/
-```
+**https://bosesean.github.io/polyrhythm-drill/**
+
+(served from the `main` branch root — pushing to `main` redeploys it.)
 
 ## 🧠 How the timing works
 
