@@ -706,9 +706,16 @@
   }
 
   function registerSW() {
-    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
-    }
+    if (!('serviceWorker' in navigator) || location.protocol.indexOf('http') !== 0) return;
+    // Self-heal: when a NEW worker takes control of an already-controlled page
+    // (e.g. an old buggy SW being replaced), reload once so the fresh assets win.
+    const hadController = navigator.serviceWorker.controller != null;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || window.__swReloaded) return;   // skip on first-ever install
+      window.__swReloaded = true;
+      location.reload();
+    });
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
   }
 
   // =========================================================================
