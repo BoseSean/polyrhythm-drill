@@ -434,14 +434,18 @@
     return median(iois);
   }
 
-  // approximate a real number by a fraction p/q with p,q <= maxD
-  function rationalize(x, maxD) {
+  // Approximate x by a fraction p/q (p,q <= maxD). Humans tapping freestyle mean
+  // *simple* ratios, so return the SIMPLEST fraction within `tol` relative error
+  // (denominators scanned ascending). Only if nothing fits do we take the closest.
+  // This keeps a jittery 0.735 reading as 3:4 instead of the "closer" but absurd 8:11.
+  function rationalize(x, maxD, tol) {
     let best = { p: 1, q: 1, err: Infinity };
     for (let q = 1; q <= maxD; q++) {
       const p = Math.round(x * q);
       if (p < 1 || p > maxD) continue;
       const err = Math.abs(x - p / q);
       if (err < best.err - 1e-9) best = { p, q, err };
+      if (tol && x > 0 && err / x <= tol) return { p, q, err };  // simplest within tolerance
     }
     return best;
   }
@@ -465,7 +469,7 @@
     if (pL && pR) {
       // beats-per-time ratio L:R = (1/pL):(1/pR) = pR:pL
       const x = pR / pL;                 // = countL / countR
-      const frac = rationalize(x, 13);
+      const frac = rationalize(x, 16, 0.03);   // prefer the simplest ratio within 3%
       const g = gcd(frac.p, frac.q) || 1;
       const p = frac.p / g, q = frac.q / g;
       const conf = frac.err / x;         // relative error
